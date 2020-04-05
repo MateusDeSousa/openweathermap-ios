@@ -7,15 +7,22 @@
 import UIKit
 import MapKit
 
-final class MapViewController: UIViewController {
-
-    @IBOutlet private weak var mapView: MKMapView!
+class MapViewController: UIViewController, HasCustomView {
+    
+    typealias CustomView = MapCustomView
+    
     private let locationManager = CLLocationManager()
+    
+    override func loadView() {
+        super.loadView()
+        let mapView = MapCustomView()
+        view = mapView
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        mapView.delegate = self
+        customView.mapView.delegate = self
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.requestWhenInUseAuthorization()
@@ -24,23 +31,23 @@ final class MapViewController: UIViewController {
     
     func updateAnnotation(location: CLLocationCoordinate2D) {
         let annotation = Annotation(coordinate: location, title: "Rio Grande", subtitle: "Mostly Cloudy")
-        if let removeAnnotation = mapView.annotations.first {
-            mapView.removeAnnotation(removeAnnotation)
+        if let removeAnnotation = customView.mapView.annotations.first {
+            customView.mapView.removeAnnotation(removeAnnotation)
         }
-        mapView.addAnnotation(annotation)
+        customView.mapView.addAnnotation(annotation)
     }
     
     func updateTarget(location: CLLocationCoordinate2D) {
         let circleCenter = MKCircle(center: location, radius: 5)
         let circleEdge = MKCircle(center: location, radius: 50)
         
-        mapView.overlays.forEach { overlay in
+        customView.mapView.overlays.forEach { overlay in
             if overlay is MKCircle {
-                mapView.removeOverlay(overlay)
+                customView.mapView.removeOverlay(overlay)
             }
         }
-        mapView.addOverlay(circleCenter)
-        mapView.addOverlay(circleEdge)
+        customView.mapView.addOverlay(circleCenter)
+        customView.mapView.addOverlay(circleEdge)
     }
 }
 
@@ -120,6 +127,6 @@ extension MapViewController: CLLocationManagerDelegate {
         
         let span = MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02)
         let region = MKCoordinateRegion(center: location, span: span)
-        mapView.setRegion(region, animated: true)
+        customView.mapView.setRegion(region, animated: true)
     }
 }
